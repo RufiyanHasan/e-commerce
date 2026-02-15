@@ -3,6 +3,10 @@
     <h1>Admin Login</h1>
     <p class="subtitle">Store owners: sign in to your dashboard</p>
 
+    @if (error) {
+      <div class="error-msg" role="alert">{{ error }}</div>
+    }
+
     <form (ngSubmit)="onSubmit()" class="auth-form">
       <label>
         <span>Email</span>
@@ -12,8 +16,10 @@
         <span>Password</span>
         <input type="password" [(ngModel)]="password" name="password" required placeholder="••••••••" />
       </label>
-      <button type="submit" class="btn-primary">Sign in to Dashboard</button>
+      <button type="submit" class="btn-primary" [disabled]="loading">{{ loading ? 'Signing in…' : 'Sign in to Dashboard' }}</button>
     </form>
+
+    <p class="hint">Try: admin@store.com / admin123</p>
 
     <p class="footer-link">
       <a routerLink="/auth/login">← Customer login</a>

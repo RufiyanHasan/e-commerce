@@ -3,17 +3,23 @@
     <h1>Customer Login</h1>
     <p class="subtitle">Sign in to your account</p>
 
+    @if (error) {
+      <div class="error-msg" role="alert">{{ error }}</div>
+    }
+
     <form (ngSubmit)="onSubmit()" class="auth-form">
       <label>
         <span>Email</span>
-        <input type="email" [(ngModel)]="email" name="email" required placeholder="you@example.com" />
+        <input type="email" [(ngModel)]="email" name="email" required placeholder="user@example.com" />
       </label>
       <label>
         <span>Password</span>
         <input type="password" [(ngModel)]="password" name="password" required placeholder="••••••••" />
       </label>
-      <button type="submit" class="btn-primary">Sign in</button>
+      <button type="submit" class="btn-primary" [disabled]="loading">{{ loading ? 'Signing in…' : 'Sign in' }}</button>
     </form>
+
+    <p class="hint">Try: user@example.com / password123</p>
 
     <p class="footer-link">
       Don't have an account? <a routerLink="/auth/register">Register</a>

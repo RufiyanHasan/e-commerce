@@ -4,7 +4,15 @@
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
     <a routerLink="/products" routerLinkActive="active">Products</a>
     <a routerLink="/cart" routerLinkActive="active">Cart</a>
-    <a routerLink="/auth/login" routerLinkActive="active">Login</a>
-    <a routerLink="/auth/admin/login" routerLinkActive="active" class="nav-admin">Admin</a>
+    @if (auth.isLoggedIn()) {
+      <span class="user-name">Hi, {{ auth.currentUser()?.name }}</span>
+      @if (auth.isAdmin()) {
+        <span class="badge">Admin</span>
+      }
+      <button type="button" class="btn-logout" (click)="auth.logout()">Logout</button>
+    } @else {
+      <a routerLink="/auth/login" routerLinkActive="active">Login</a>
+      <a routerLink="/auth/admin/login" routerLinkActive="active" class="nav-admin">Admin</a>
+    }
   </nav>
 </header>

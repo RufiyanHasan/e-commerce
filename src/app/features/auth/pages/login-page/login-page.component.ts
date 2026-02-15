@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login-page',
@@ -12,9 +13,23 @@ import { FormsModule } from '@angular/forms';
 export class LoginPageComponent {
   email = '';
   password = '';
+  error: string | null = null;
+  loading = false;
+
+  constructor(
+    private auth: AuthService,
+    private router: Router
+  ) {}
 
   onSubmit() {
-    // TODO: call auth service
-    console.log('User login', { email: this.email, password: this.password });
+    this.error = null;
+    this.loading = true;
+    const err = this.auth.loginCustomer(this.email, this.password);
+    this.loading = false;
+    if (err) {
+      this.error = err;
+      return;
+    }
+    this.router.navigate(['/']);
   }
 }

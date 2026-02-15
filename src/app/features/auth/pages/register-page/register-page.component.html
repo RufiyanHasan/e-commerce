@@ -3,6 +3,10 @@
     <h1>Create Account</h1>
     <p class="subtitle">Register as a customer</p>
 
+    @if (error) {
+      <div class="error-msg" role="alert">{{ error }}</div>
+    }
+
     <form (ngSubmit)="onSubmit()" class="auth-form">
       <label>
         <span>Name</span>
@@ -14,9 +18,9 @@
       </label>
       <label>
         <span>Password</span>
-        <input type="password" [(ngModel)]="password" name="password" required placeholder="••••••••" />
+        <input type="password" [(ngModel)]="password" name="password" required placeholder="At least 6 characters" minlength="6" />
       </label>
-      <button type="submit" class="btn-primary">Create account</button>
+      <button type="submit" class="btn-primary" [disabled]="loading">{{ loading ? 'Creating…' : 'Create account' }}</button>
     </form>
 
     <p class="footer-link">

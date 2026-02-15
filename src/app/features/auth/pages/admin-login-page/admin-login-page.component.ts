@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-login-page',
@@ -12,9 +13,23 @@ import { FormsModule } from '@angular/forms';
 export class AdminLoginPageComponent {
   email = '';
   password = '';
+  error: string | null = null;
+  loading = false;
+
+  constructor(
+    private auth: AuthService,
+    private router: Router
+  ) {}
 
   onSubmit() {
-    // TODO: call admin auth service
-    console.log('Admin login', { email: this.email, password: this.password });
+    this.error = null;
+    this.loading = true;
+    const err = this.auth.loginAdmin(this.email, this.password);
+    this.loading = false;
+    if (err) {
+      this.error = err;
+      return;
+    }
+    this.router.navigate(['/']);
   }
 }
