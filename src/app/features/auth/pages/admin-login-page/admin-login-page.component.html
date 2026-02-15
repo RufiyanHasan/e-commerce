@@ -1,0 +1,22 @@
+<section class="admin-login-page">
+  <div class="admin-login-card">
+    <h1>Admin Login</h1>
+    <p class="subtitle">Store owners: sign in to your dashboard</p>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <label>
+        <span>Email</span>
+        <input type="email" [(ngModel)]="email" name="email" required placeholder="admin@store.com" />
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" [(ngModel)]="password" name="password" required placeholder="••••••••" />
+      </label>
+      <button type="submit" class="btn-primary">Sign in to Dashboard</button>
+    </form>
+
+    <p class="footer-link">
+      <a routerLink="/auth/login">← Customer login</a>
+    </p>
+  </div>
+</section>

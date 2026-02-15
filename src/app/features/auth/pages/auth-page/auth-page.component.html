@@ -1,4 +1,15 @@
 <section class="auth-page">
   <h1>Account</h1>
-  <p>Sign in or register.</p>
+  <p class="subtitle">Choose how you want to sign in.</p>
+
+  <div class="auth-options">
+    <a routerLink="/auth/login" class="auth-option">
+      <span class="auth-option-title">Customer Login</span>
+      <span class="auth-option-desc">Sign in or register to shop</span>
+    </a>
+    <a routerLink="/auth/admin/login" class="auth-option auth-option-admin">
+      <span class="auth-option-title">Admin Login</span>
+      <span class="auth-option-desc">Store owners: access your dashboard</span>
+    </a>
+  </div>
 </section>

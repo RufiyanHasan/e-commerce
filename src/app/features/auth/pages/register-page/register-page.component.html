@@ -1,0 +1,26 @@
+<section class="register-page">
+  <div class="register-card">
+    <h1>Create Account</h1>
+    <p class="subtitle">Register as a customer</p>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <label>
+        <span>Name</span>
+        <input type="text" [(ngModel)]="name" name="name" required placeholder="Your name" />
+      </label>
+      <label>
+        <span>Email</span>
+        <input type="email" [(ngModel)]="email" name="email" required placeholder="you@example.com" />
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" [(ngModel)]="password" name="password" required placeholder="••••••••" />
+      </label>
+      <button type="submit" class="btn-primary">Create account</button>
+    </form>
+
+    <p class="footer-link">
+      Already have an account? <a routerLink="/auth/login">Sign in</a>
+    </p>
+  </div>
+</section>

@@ -30,5 +30,15 @@
     &:hover {
       color: var(--color-primary);
     }
+
+    &.nav-admin {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+
+      &:hover,
+      &.active {
+        color: var(--color-primary);
+      }
+    }
   }
 }

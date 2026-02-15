@@ -1,0 +1,22 @@
+<section class="login-page">
+  <div class="login-card">
+    <h1>Customer Login</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <label>
+        <span>Email</span>
+        <input type="email" [(ngModel)]="email" name="email" required placeholder="you@example.com" />
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" [(ngModel)]="password" name="password" required placeholder="••••••••" />
+      </label>
+      <button type="submit" class="btn-primary">Sign in</button>
+    </form>
+
+    <p class="footer-link">
+      Don't have an account? <a routerLink="/auth/register">Register</a>
+    </p>
+  </div>
+</section>
