@@ -31,6 +31,6 @@ export class RegisterPageComponent {
       this.error = err;
       return;
     }
-    this.router.navigate(['/']);
+    this.router.navigate(['/products']);
   }
 }
