@@ -3,7 +3,7 @@
     <div class="success-card">
       <div class="success-icon">✅</div>
       <h1>Order Placed!</h1>
-      <p>Thank you for your purchase. Your order has been received.</p>
+      <p>Thank you for your purchase. A confirmation email has been sent to you.</p>
       <a routerLink="/products" class="btn-primary">Continue Shopping</a>
     </div>
   </section>
@@ -16,8 +16,24 @@
 
     <div class="checkout-layout">
 
-      <!-- Left: Payment method -->
+      <!-- Left: Contact + Payment method -->
       <div class="checkout-main">
+
+        <!-- Contact details for email + SMS -->
+        <div class="section-card">
+          <h2>Contact Details</h2>
+          <p class="section-desc">We'll send your order confirmation to this email.</p>
+          <div class="card-form">
+            <label class="field">
+              <span>Full Name</span>
+              <input type="text" [(ngModel)]="customerName" name="customerName" placeholder="John Doe" />
+            </label>
+            <label class="field">
+              <span>Email Address</span>
+              <input type="email" [(ngModel)]="customerEmail" name="customerEmail" placeholder="you@example.com" />
+            </label>
+          </div>
+        </div>
         <div class="section-card">
           <h2>Choose Payment Method</h2>
           <div class="payment-methods">
@@ -126,9 +142,17 @@
             </div>
           </div>
 
-          <button type="button" class="btn-primary" (click)="placeOrder()">
-            Place Order
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="placeOrder()"
+            [disabled]="placing"
+          >
+            {{ placing ? 'Placing order…' : 'Place Order' }}
           </button>
+          @if (placing) {
+            <p class="placing-note">Sending confirmation email &amp; SMS…</p>
+          }
         </div>
       </aside>
 

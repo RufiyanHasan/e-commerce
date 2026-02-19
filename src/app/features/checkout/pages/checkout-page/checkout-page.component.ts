@@ -3,6 +3,8 @@ import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../../../core/services/cart.service';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { Order } from '../../../../core/models/order.model';
 import { environment } from '../../../../../environments/environment';
 
 export type PaymentMethod = 'card' | 'paypal' | 'stripe';
@@ -32,8 +34,13 @@ interface PayPalActions {
 export class CheckoutPageComponent implements OnInit, OnDestroy {
   selectedMethod: PaymentMethod = 'card';
   orderPlaced = false;
+  placing = false;
   paypalLoaded = false;
   paypalError: string | null = null;
+
+  // Customer contact details for email notification
+  customerName = '';
+  customerEmail = '';
 
   private scriptEl: HTMLScriptElement | null = null;
 
@@ -58,7 +65,10 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     },
   ];
 
-  constructor(protected cart: CartService) {}
+  constructor(
+    protected cart: CartService,
+    private notifications: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadPayPalScript();
@@ -72,21 +82,30 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   onMethodChange(): void {
-    // Re-render the PayPal button when user switches to PayPal tab
     if (this.selectedMethod === 'paypal' && this.paypalLoaded) {
-      // Give Angular one tick to render the container in the DOM first
       setTimeout(() => this.renderPayPalButton(), 0);
     }
   }
 
-  placeOrder(): void {
-    console.log('Order placed:', {
-      method: this.selectedMethod,
-      items: this.cart.items(),
-      total: this.cart.totalPrice(),
-    });
+  async placeOrder(): Promise<void> {
+    this.placing = true;
+    const order = this.buildOrder();
+    await this.notifications.notifyOrderPlaced(order);
     this.cart.clear();
     this.orderPlaced = true;
+    this.placing = false;
+  }
+
+  private buildOrder(): Order {
+    return {
+      id: `ORD-${Date.now()}`,
+      customerName: this.customerName || 'Customer',
+      customerEmail: this.customerEmail,
+      items: this.cart.items(),
+      total: this.cart.totalPrice(),
+      paymentMethod: this.selectedMethod,
+      placedAt: new Date(),
+    };
   }
 
   private loadPayPalScript(): void {
@@ -113,25 +132,19 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   private renderPayPalButton(): void {
     const container = document.getElementById('paypal-button-container');
     if (!container) return;
-    // Clear any previously rendered button before re-rendering
     container.innerHTML = '';
 
     paypal
       .Buttons({
         createOrder: (_data: unknown, actions: PayPalActions) =>
           actions.order.create({
-            purchase_units: [
-              {
-                amount: { value: this.cart.totalPrice().toFixed(2) },
-              },
-            ],
+            purchase_units: [{ amount: { value: this.cart.totalPrice().toFixed(2) } }],
           }),
         onApprove: (_data: { orderID: string }, actions: PayPalActions) =>
-          actions.order.capture().then((details) => {
+          actions.order.capture().then(async (details) => {
             const name = details?.payer?.name?.given_name ?? 'Customer';
-            console.log(`Payment successful! Thank you, ${name}.`);
-            this.cart.clear();
-            this.orderPlaced = true;
+            this.customerName = this.customerName || name;
+            await this.placeOrder();
           }),
         onError: (err: unknown) => {
           console.error('PayPal error:', err);
