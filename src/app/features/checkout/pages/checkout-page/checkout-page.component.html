@@ -1,4 +1,137 @@
-<section class="checkout-page">
-  <h1>Checkout</h1>
-  <p>Checkout flow will go here.</p>
-</section>
+@if (orderPlaced) {
+  <section class="success-page">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h1>Order Placed!</h1>
+      <p>Thank you for your purchase. Your order has been received.</p>
+      <a routerLink="/products" class="btn-primary">Continue Shopping</a>
+    </div>
+  </section>
+} @else {
+  <section class="checkout-page">
+    <header class="page-header">
+      <h1>Checkout</h1>
+      <a routerLink="/cart" class="back-link">← Back to cart</a>
+    </header>
+
+    <div class="checkout-layout">
+
+      <!-- Left: Payment method -->
+      <div class="checkout-main">
+        <div class="section-card">
+          <h2>Choose Payment Method</h2>
+          <div class="payment-methods">
+            @for (method of methods; track method.id) {
+              <label
+                class="payment-option"
+                [class.selected]="selectedMethod === method.id"
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  [value]="method.id"
+                  [(ngModel)]="selectedMethod"
+                  (change)="onMethodChange()"
+                />
+                <span class="method-icon">{{ method.icon }}</span>
+                <span class="method-info">
+                  <span class="method-label">{{ method.label }}</span>
+                  <span class="method-note">{{ method.note }}</span>
+                </span>
+                @if (selectedMethod === method.id) {
+                  <span class="method-check">✓</span>
+                }
+              </label>
+            }
+          </div>
+        </div>
+
+        @if (selectedMethod === 'card') {
+          <div class="section-card">
+            <h2>Card Details</h2>
+            <p class="test-hint">🔒 Test mode — use card <strong>4242 4242 4242 4242</strong>, any future date, any CVC.</p>
+            <div class="card-form">
+              <label class="field">
+                <span>Cardholder Name</span>
+                <input type="text" placeholder="John Doe" />
+              </label>
+              <label class="field">
+                <span>Card Number</span>
+                <input type="text" placeholder="4242 4242 4242 4242" maxlength="19" />
+              </label>
+              <div class="field-row">
+                <label class="field">
+                  <span>Expiry</span>
+                  <input type="text" placeholder="MM / YY" maxlength="7" />
+                </label>
+                <label class="field">
+                  <span>CVC</span>
+                  <input type="text" placeholder="123" maxlength="3" />
+                </label>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (selectedMethod === 'paypal') {
+          <div class="section-card gateway-info">
+            <h2>PayPal</h2>
+            <p class="test-hint">🔒 Sandbox mode — log in with your PayPal sandbox buyer account to complete payment.</p>
+            @if (paypalError) {
+              <p class="paypal-error">{{ paypalError }}</p>
+            }
+            @if (!paypalLoaded && !paypalError) {
+              <p class="paypal-loading">Loading PayPal…</p>
+            }
+            <div id="paypal-button-container"></div>
+          </div>
+        }
+
+        @if (selectedMethod === 'stripe') {
+          <div class="section-card gateway-info">
+            <h2>Stripe Checkout</h2>
+            <p>You will be redirected to Stripe's hosted checkout page.</p>
+            <p class="test-hint">🔒 Test mode — use card <strong>4242 4242 4242 4242</strong> on the Stripe checkout page.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Right: Order summary -->
+      <aside class="checkout-aside">
+        <div class="section-card">
+          <h2>Order Summary</h2>
+          <ul class="summary-items">
+            @for (item of cart.items(); track item.product.id) {
+              <li class="summary-item">
+                <img [src]="item.product.imageUrl" [alt]="item.product.name" class="summary-thumb" />
+                <span class="summary-item-name">{{ item.product.name }}</span>
+                <span class="summary-item-qty">×{{ item.quantity }}</span>
+                <span class="summary-item-price">{{ (item.product.price * item.quantity) | number : '1.2-2' }} USD</span>
+              </li>
+            }
+          </ul>
+
+          <div class="summary-totals">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>{{ cart.totalPrice() | number : '1.2-2' }} USD</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span class="free">Free</span>
+            </div>
+            <div class="summary-row total-row">
+              <strong>Total</strong>
+              <strong class="total-price">{{ cart.totalPrice() | number : '1.2-2' }} USD</strong>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary" (click)="placeOrder()">
+            Place Order
+          </button>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+}

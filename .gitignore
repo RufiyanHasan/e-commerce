@@ -42,3 +42,7 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment files with real API keys — never commit these
+src/environments/environment.ts
+src/environments/environment.prod.ts

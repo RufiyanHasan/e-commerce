@@ -57,6 +57,26 @@
     font-weight: 600;
   }
 
+  .nav-cart {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .cart-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 999px;
+  }
+
   .btn-logout {
     padding: 0.35rem 0.75rem;
     font-size: 0.875rem;

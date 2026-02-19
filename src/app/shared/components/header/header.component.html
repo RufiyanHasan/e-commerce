@@ -3,7 +3,12 @@
   <nav class="nav">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
     <a routerLink="/products" routerLinkActive="active">Products</a>
-    <a routerLink="/cart" routerLinkActive="active">Cart</a>
+    <a routerLink="/cart" routerLinkActive="active" class="nav-cart">
+      Cart
+      @if (cart.totalItemCount() > 0) {
+        <span class="cart-badge">{{ cart.totalItemCount() }}</span>
+      }
+    </a>
     @if (auth.isLoggedIn()) {
       <span class="user-name">Hi, {{ auth.currentUser()?.name }}</span>
       @if (auth.isAdmin()) {

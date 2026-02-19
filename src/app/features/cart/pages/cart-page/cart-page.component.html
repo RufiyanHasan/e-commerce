@@ -1,4 +1,54 @@
 <section class="cart-page">
-  <h1>Cart</h1>
-  <p>Your cart is empty.</p>
+  <header class="page-header">
+    <h1>Your Cart</h1>
+    <p class="subtitle">{{ cart.totalItemCount() }} {{ cart.totalItemCount() === 1 ? 'item' : 'items' }}</p>
+  </header>
+
+  @if (cart.items().length === 0) {
+    <div class="empty-cart">
+      <p>Your cart is empty.</p>
+      <a routerLink="/products" class="link-products">Browse products</a>
+    </div>
+  } @else {
+    <ul class="cart-list">
+      @for (item of cart.items(); track item.product.id) {
+        <li class="cart-item">
+          <div class="cart-item-image">
+            <img [src]="item.product.imageUrl" [alt]="item.product.name" />
+          </div>
+          <div class="cart-item-details">
+            <h2 class="cart-item-name">{{ item.product.name }}</h2>
+            <p class="cart-item-price">{{ item.product.price | number : '1.2-2' }} USD each</p>
+            <div class="cart-item-actions">
+              <div class="quantity-controls">
+                <button type="button" class="btn-qty" (click)="decrease(item.product.id, item.quantity)" aria-label="Decrease">−</button>
+                <span class="qty-value">{{ item.quantity }}</span>
+                <button type="button" class="btn-qty" (click)="increase(item.product.id, item.quantity)" aria-label="Increase">+</button>
+              </div>
+              <button type="button" class="btn-remove" (click)="remove(item.product.id)">Remove</button>
+            </div>
+          </div>
+          <div class="cart-item-total">
+            {{ (item.product.price * item.quantity) | number : '1.2-2' }} USD
+          </div>
+        </li>
+      }
+    </ul>
+
+    <div class="cart-summary">
+      <div class="cart-summary-row">
+        <span class="summary-label">Subtotal ({{ cart.totalItemCount() }} items)</span>
+        <span class="summary-value">{{ cart.totalPrice() | number : '1.2-2' }} USD</span>
+      </div>
+      <div class="cart-summary-row">
+        <span class="summary-label">Shipping</span>
+        <span class="summary-value free">Free</span>
+      </div>
+      <div class="cart-summary-row total-row">
+        <span class="summary-label">Total</span>
+        <span class="summary-value total-value">{{ cart.totalPrice() | number : '1.2-2' }} USD</span>
+      </div>
+      <a routerLink="/checkout" class="btn-checkout">Proceed to Checkout →</a>
+    </div>
+  }
 </section>
