@@ -82,11 +82,9 @@ export class AdminDashboardComponent {
 
     const id = this.editingId();
     if (id) {
-      this.productService.updateProduct(id, payload);
-      this.flash('Product updated successfully.');
+      this.productService.updateProduct(id, payload).then(() => this.flash('Product updated successfully.'));
     } else {
-      this.productService.addProduct(payload);
-      this.flash('Product added successfully.');
+      this.productService.addProduct(payload).then(() => this.flash('Product added successfully.'));
     }
 
     this.closeForm();
@@ -107,9 +105,10 @@ export class AdminDashboardComponent {
   }
 
   deleteProduct(id: string): void {
-    this.productService.deleteProduct(id);
-    this.deleteConfirmId.set(null);
-    this.flash('Product deleted.');
+    this.productService.deleteProduct(id).then(() => {
+      this.deleteConfirmId.set(null);
+      this.flash('Product deleted.');
+    });
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

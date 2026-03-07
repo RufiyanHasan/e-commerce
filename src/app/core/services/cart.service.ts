@@ -1,27 +1,25 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Product } from '../models/product.model';
 import { CartItem } from '../models/cart-item.model';
+import { TokenService } from './token.service';
 
-const CART_STORAGE_KEY = 'ecommerce_cart';
-
-function isCartItem(raw: unknown): raw is CartItem {
-  if (!raw || typeof raw !== 'object') return false;
-  const o = raw as Record<string, unknown>;
-  const q = o['quantity'];
-  if (typeof q !== 'number' || q < 1) return false;
-  const p = o['product'];
-  if (!p || typeof p !== 'object') return false;
-  const prod = p as Record<string, unknown>;
-  return (
-    typeof prod['id'] === 'string' &&
-    typeof prod['name'] === 'string' &&
-    typeof prod['price'] === 'number'
-  );
+interface ApiCartItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  product: Product & { price: string | number; rating?: string | number };
 }
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private readonly itemsSignal = signal<CartItem[]>(this.loadFromStorage());
+  private readonly api = `${environment.apiUrl}/cart`;
+  private readonly http = inject(HttpClient);
+  private readonly token = inject(TokenService);
+
+  private readonly itemsSignal = signal<CartItem[]>([]);
 
   readonly items = this.itemsSignal.asReadonly();
   readonly totalItemCount = computed(() =>
@@ -32,64 +30,99 @@ export class CartService {
   );
 
   constructor() {
+    // When a token appears (user logs in), load the server cart.
+    // When it disappears (logout), clear the local state.
     effect(() => {
-      const items = this.itemsSignal();
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-        } catch {
-          // ignore quota / private mode
-        }
+      if (this.token.isPresent()) {
+        this.loadCart();
+      } else {
+        this.itemsSignal.set([]);
       }
     });
   }
 
-  private loadFromStorage(): CartItem[] {
-    if (typeof window === 'undefined') return [];
+  // ── Sync from backend ──────────────────────────────────────────────────────
+
+  async loadCart(): Promise<void> {
+    if (!this.token.isPresent()) return;
     try {
-      const raw = localStorage.getItem(CART_STORAGE_KEY);
-      if (!raw) return [];
-      const parsed: unknown = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed.filter(isCartItem);
+      const items = await firstValueFrom(this.http.get<ApiCartItem[]>(this.api));
+      this.itemsSignal.set(items.map(this.normalise));
     } catch {
-      return [];
+      // silently ignore (e.g. token expired)
     }
   }
+
+  // ── Public API (mirrors old interface so templates don't change) ───────────
 
   getQuantity(productId: string): number {
     return this.itemsSignal().find((i) => i.product.id === productId)?.quantity ?? 0;
   }
 
-  addItem(product: Product, quantity = 1): void {
+  async addItem(product: Product, quantity = 1): Promise<void> {
+    const current = this.getQuantity(product.id);
+    await this.upsert(product, current + quantity);
+  }
+
+  async updateQuantity(productId: string, quantity: number): Promise<void> {
+    if (quantity < 1) { await this.removeItem(productId); return; }
+    const product = this.itemsSignal().find((i) => i.product.id === productId)?.product;
+    if (!product) return;
+    await this.upsert(product, quantity);
+  }
+
+  async removeItem(productId: string): Promise<void> {
+    if (this.token.isPresent()) {
+      try {
+        await firstValueFrom(this.http.delete(`${this.api}/${productId}`));
+      } catch { /* ignore */ }
+    }
+    this.itemsSignal.update((list) => list.filter((i) => i.product.id !== productId));
+  }
+
+  async clear(): Promise<void> {
+    if (this.token.isPresent()) {
+      try {
+        await firstValueFrom(this.http.delete(this.api));
+      } catch { /* ignore */ }
+    }
+    this.itemsSignal.set([]);
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  private async upsert(product: Product, quantity: number): Promise<void> {
+    // Optimistic update first
+    this.setLocal(product, quantity);
+
+    if (!this.token.isPresent()) return;
+
+    try {
+      const item = await firstValueFrom(
+        this.http.put<ApiCartItem>(this.api, { productId: product.id, quantity })
+      );
+      // Reconcile with server response
+      this.itemsSignal.update((list) =>
+        list.map((i) => (i.product.id === product.id ? this.normalise(item) : i))
+      );
+    } catch { /* keep optimistic state */ }
+  }
+
+  private setLocal(product: Product, quantity: number): void {
     const current = this.itemsSignal();
-    const existing = current.find((i) => i.product.id === product.id);
-    const next: CartItem[] = existing
-      ? current.map((i) =>
-          i.product.id === product.id
-            ? { ...i, quantity: i.quantity + quantity }
-            : i
-        )
+    const exists = current.some((i) => i.product.id === product.id);
+    const next = exists
+      ? current.map((i) => (i.product.id === product.id ? { ...i, quantity } : i))
       : [...current, { product, quantity }];
     this.itemsSignal.set(next);
   }
 
-  updateQuantity(productId: string, quantity: number): void {
-    if (quantity < 1) {
-      this.removeItem(productId);
-      return;
-    }
-    const next = this.itemsSignal().map((i) =>
-      i.product.id === productId ? { ...i, quantity } : i
-    );
-    this.itemsSignal.set(next);
-  }
-
-  removeItem(productId: string): void {
-    this.itemsSignal.set(this.itemsSignal().filter((i) => i.product.id !== productId));
-  }
-
-  clear(): void {
-    this.itemsSignal.set([]);
-  }
+  private normalise = (item: ApiCartItem): CartItem => ({
+    product: {
+      ...item.product,
+      price: Number(item.product.price),
+      rating: item.product.rating ? Number(item.product.rating) : undefined,
+    },
+    quantity: item.quantity,
+  });
 }

@@ -1,10 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { CartService } from '../../../../core/services/cart.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { Order } from '../../../../core/models/order.model';
+import { AuthService } from '../../../../core/services/auth.service';
 import { environment } from '../../../../../environments/environment';
 
 export type PaymentMethod = 'card' | 'paypal' | 'stripe';
@@ -32,6 +34,10 @@ interface PayPalActions {
   styleUrl: './checkout-page.component.scss',
 })
 export class CheckoutPageComponent implements OnInit, OnDestroy {
+  private http = inject(HttpClient);
+  protected cart = inject(CartService);
+  private notifications = inject(NotificationService);
+  private auth = inject(AuthService);
   selectedMethod: PaymentMethod = 'card';
   orderPlaced = false;
   placing = false;
@@ -39,9 +45,9 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   paypalError: string | null = null;
   emailError: string | null = null;
 
-  // Customer contact details for email notification
-  customerName = '';
-  customerEmail = '';
+  // Customer contact details — pre-fill from logged-in user
+  customerName = this.auth.currentUser()?.name ?? '';
+  customerEmail = this.auth.currentUser()?.email ?? '';
 
   private scriptEl: HTMLScriptElement | null = null;
 
@@ -66,10 +72,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     },
   ];
 
-  constructor(
-    protected cart: CartService,
-    private notifications: NotificationService
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.loadPayPalScript();
@@ -101,23 +104,45 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     }
     this.emailError = null;
     this.placing = true;
-    const order = this.buildOrder();
-    await this.notifications.notifyOrderPlaced(order);
-    this.cart.clear();
-    this.orderPlaced = true;
-    this.placing = false;
-  }
 
-  private buildOrder(): Order {
-    return {
-      id: `ORD-${Date.now()}`,
-      customerName: this.customerName || 'Customer',
-      customerEmail: this.customerEmail,
-      items: this.cart.items(),
-      total: this.cart.totalPrice(),
-      paymentMethod: this.selectedMethod,
-      placedAt: new Date(),
-    };
+    try {
+      const orderPayload = {
+        customerName: this.customerName || 'Customer',
+        customerEmail: this.customerEmail,
+        paymentMethod: this.selectedMethod,
+        items: this.cart.items().map((i) => ({
+          productId: i.product.id,
+          quantity: i.quantity,
+        })),
+      };
+
+      const order = await firstValueFrom(
+        this.http.post<{ id: string; customerName: string; customerEmail: string; total: number; paymentMethod: string; placedAt: string }>(
+          `${environment.apiUrl}/orders`,
+          orderPayload
+        )
+      );
+
+      // Send confirmation email via EmailJS
+      await this.notifications.notifyOrderPlaced({
+        id: order.id,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        items: this.cart.items(),
+        total: Number(order.total),
+        paymentMethod: order.paymentMethod,
+        placedAt: new Date(order.placedAt),
+      });
+
+      // Cart is cleared server-side by the order endpoint; clear locally too
+      await this.cart.clear();
+      this.orderPlaced = true;
+    } catch (err) {
+      console.error('Order failed:', err);
+      this.emailError = 'Failed to place order. Please try again.';
+    } finally {
+      this.placing = false;
+    }
   }
 
   private loadPayPalScript(): void {

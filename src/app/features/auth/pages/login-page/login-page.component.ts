@@ -21,15 +21,12 @@ export class LoginPageComponent {
     private router: Router
   ) {}
 
-  onSubmit() {
+  async onSubmit() {
     this.error = null;
     this.loading = true;
-    const err = this.auth.loginCustomer(this.email, this.password);
+    const err = await this.auth.loginCustomer(this.email, this.password);
     this.loading = false;
-    if (err) {
-      this.error = err;
-      return;
-    }
+    if (err) { this.error = err; return; }
     this.router.navigate(['/products']);
   }
 }

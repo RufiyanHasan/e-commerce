@@ -21,15 +21,12 @@ export class AdminLoginPageComponent {
     private router: Router
   ) {}
 
-  onSubmit() {
+  async onSubmit() {
     this.error = null;
     this.loading = true;
-    const err = this.auth.loginAdmin(this.email, this.password);
+    const err = await this.auth.loginAdmin(this.email, this.password);
     this.loading = false;
-    if (err) {
-      this.error = err;
-      return;
-    }
-    this.router.navigate(['/products']);
+    if (err) { this.error = err; return; }
+    this.router.navigate(['/admin']);
   }
 }

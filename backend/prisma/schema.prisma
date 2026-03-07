@@ -1,0 +1,112 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// ── User ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+  cartItems CartItem[]
+
+  @@map("users")
+}
+
+// ── Product ───────────────────────────────────────────────────────────────────
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @default("")
+  price       Decimal  @db.Decimal(10, 2)
+  category    String
+  imageUrl    String   @default("")
+  rating      Decimal? @db.Decimal(3, 1)
+  inStock     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+
+  @@map("products")
+}
+
+// ── Order ─────────────────────────────────────────────────────────────────────
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String
+  customerName  String
+  customerEmail String
+  total         Decimal     @db.Decimal(10, 2)
+  paymentMethod String
+  status        OrderStatus @default(PENDING)
+  placedAt      DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id])
+  items      OrderItem[]
+
+  @@map("orders")
+}
+
+// ── OrderItem ──────────────────────────────────────────────────────────────────
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// ── CartItem ───────────────────────────────────────────────────────────────────
+
+model CartItem {
+  id        String @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int    @default(1)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
