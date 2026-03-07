@@ -5,7 +5,7 @@
   </header>
 
   <div class="product-grid" [attr.data-cart-count]="cart.totalItemCount()">
-    @for (product of products; track product.id) {
+    @for (product of products(); track product.id) {
       <article class="product-card">
         <div class="product-image">
           <img [src]="product.imageUrl" [alt]="product.name" loading="lazy" />

@@ -31,6 +31,11 @@ export const LAYOUT_ROUTES: Routes = [
         loadChildren: () =>
           import('../features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
       },
+      {
+        path: 'admin',
+        loadChildren: () =>
+          import('../features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+      },
     ],
   },
 ];

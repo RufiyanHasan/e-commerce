@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { Product } from '../../../../core/models/product.model';
 import { ProductService } from '../../../../core/services/product.service';
@@ -12,14 +12,10 @@ import { CartService } from '../../../../core/services/cart.service';
   styleUrl: './product-list-page.component.scss',
 })
 export class ProductListPageComponent {
-  products: Product[] = [];
+  private productService = inject(ProductService);
+  protected cart = inject(CartService);
 
-  constructor(
-    private productService: ProductService,
-    protected cart: CartService
-  ) {
-    this.products = this.productService.getProducts();
-  }
+  readonly products = this.productService.products;
 
   getQuantity(productId: string): number {
     return this.cart.getQuantity(productId);

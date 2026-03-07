@@ -37,6 +37,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   placing = false;
   paypalLoaded = false;
   paypalError: string | null = null;
+  emailError: string | null = null;
 
   // Customer contact details for email notification
   customerName = '';
@@ -87,7 +88,18 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  onEmailChange(): void {
+    if (this.customerEmail && this.customerEmail.includes('@')) {
+      this.emailError = null;
+    }
+  }
+
   async placeOrder(): Promise<void> {
+    if (!this.customerEmail || !this.customerEmail.includes('@')) {
+      this.emailError = 'A valid email address is required to place an order.';
+      return;
+    }
+    this.emailError = null;
     this.placing = true;
     const order = this.buildOrder();
     await this.notifications.notifyOrderPlaced(order);

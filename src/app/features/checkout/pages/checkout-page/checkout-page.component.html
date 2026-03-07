@@ -29,8 +29,19 @@
               <input type="text" [(ngModel)]="customerName" name="customerName" placeholder="John Doe" />
             </label>
             <label class="field">
-              <span>Email Address</span>
-              <input type="email" [(ngModel)]="customerEmail" name="customerEmail" placeholder="you@example.com" />
+              <span>Email Address <span class="required">*</span></span>
+              <input
+                type="email"
+                [(ngModel)]="customerEmail"
+                name="customerEmail"
+                placeholder="you@example.com"
+                required
+                (ngModelChange)="onEmailChange()"
+                [class.input-error]="emailError"
+              />
+              @if (emailError) {
+                <span class="field-error">{{ emailError }}</span>
+              }
             </label>
           </div>
         </div>
@@ -151,7 +162,7 @@
             {{ placing ? 'Placing order…' : 'Place Order' }}
           </button>
           @if (placing) {
-            <p class="placing-note">Sending confirmation email &amp; SMS…</p>
+            <p class="placing-note">Sending confirmation email…</p>
           }
         </div>
       </aside>

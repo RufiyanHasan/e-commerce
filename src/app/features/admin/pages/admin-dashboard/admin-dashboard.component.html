@@ -1,0 +1,204 @@
+<div class="admin-dashboard">
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p class="admin-subtitle">Manage your product catalogue</p>
+    </div>
+    <button type="button" class="btn-add" (click)="openAddForm()">+ Add Product</button>
+  </header>
+
+  <!-- Flash message -->
+  @if (successMessage()) {
+    <div class="flash-success" role="status">{{ successMessage() }}</div>
+  }
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-value">{{ products().length }}</span>
+      <span class="stat-label">Total Products</span>
+    </div>
+  </div>
+
+  <!-- Add / Edit form modal -->
+  @if (showForm()) {
+    <div class="modal-backdrop" (click)="cancelForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">{{ editingId() ? 'Edit Product' : 'Add New Product' }}</h2>
+
+        <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="product-form" novalidate>
+
+          <!-- Name -->
+          <div class="field">
+            <label for="name">Name <span class="required">*</span></label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Product name"
+              [class.input-error]="name.invalid && name.touched"
+            />
+            @if (name.touched && name.hasError('required')) {
+              <span class="error-msg">Name is required.</span>
+            } @else if (name.touched && name.hasError('minlength')) {
+              <span class="error-msg">At least 2 characters.</span>
+            }
+          </div>
+
+          <!-- Description -->
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="2"
+              placeholder="Short description"
+            ></textarea>
+          </div>
+
+          <!-- Price + Rating -->
+          <div class="field-row">
+            <div class="field">
+              <label for="price">Price (USD) <span class="required">*</span></label>
+              <input
+                id="price"
+                type="number"
+                formControlName="price"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                [class.input-error]="price.invalid && price.touched"
+              />
+              @if (price.touched && price.hasError('required')) {
+                <span class="error-msg">Price is required.</span>
+              } @else if (price.touched && price.hasError('min')) {
+                <span class="error-msg">Price must be greater than 0.</span>
+              }
+            </div>
+
+            <div class="field">
+              <label for="rating">Rating (1–5)</label>
+              <input
+                id="rating"
+                type="number"
+                formControlName="rating"
+                min="1"
+                max="5"
+                step="0.1"
+                placeholder="4.5"
+                [class.input-error]="rating.invalid && rating.touched"
+              />
+              @if (rating.touched && (rating.hasError('min') || rating.hasError('max'))) {
+                <span class="error-msg">Rating must be between 1 and 5.</span>
+              }
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="field">
+            <label for="category">Category <span class="required">*</span></label>
+            <select
+              id="category"
+              formControlName="category"
+              [class.input-error]="category.invalid && category.touched"
+            >
+              <option value="">— Select category —</option>
+              @for (cat of CATEGORIES; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+            @if (category.touched && category.hasError('required')) {
+              <span class="error-msg">Please select a category.</span>
+            }
+          </div>
+
+          <!-- Image URL -->
+          <div class="field">
+            <label for="imageUrl">Image URL</label>
+            <input
+              id="imageUrl"
+              type="url"
+              formControlName="imageUrl"
+              placeholder="https://..."
+              [class.input-error]="imageUrl.invalid && imageUrl.touched"
+            />
+            <span class="field-hint">Leave blank to use a default image.</span>
+            @if (imageUrl.touched && imageUrl.hasError('pattern')) {
+              <span class="error-msg">Must be a valid http/https URL.</span>
+            }
+          </div>
+
+          <!-- Image preview -->
+          @if (imageUrl.value) {
+            <div class="image-preview">
+              <img [src]="imageUrl.value" alt="Preview" />
+            </div>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="cancelForm()">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="productForm.invalid">
+              {{ editingId() ? 'Save Changes' : 'Add Product' }}
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete confirmation modal -->
+  @if (deleteConfirmId()) {
+    <div class="modal-backdrop" (click)="cancelDelete()">
+      <div class="modal modal-sm" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Delete Product?</h2>
+        <p class="modal-body">This action cannot be undone.</p>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+          <button type="button" class="btn-delete" (click)="deleteProduct(deleteConfirmId()!)">Yes, Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Product table -->
+  <div class="table-wrapper">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Rating</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (product of products(); track product.id) {
+          <tr>
+            <td>
+              <img [src]="product.imageUrl" [alt]="product.name" class="table-thumb" />
+            </td>
+            <td>
+              <span class="product-name">{{ product.name }}</span>
+              <span class="product-desc-small">{{ product.description }}</span>
+            </td>
+            <td><span class="category-tag">{{ product.category }}</span></td>
+            <td class="price-cell">${{ product.price | number : '1.2-2' }}</td>
+            <td>{{ product.rating ? '★ ' + product.rating : '—' }}</td>
+            <td>
+              <div class="action-btns">
+                <button type="button" class="btn-edit" (click)="openEditForm(product)">Edit</button>
+                <button type="button" class="btn-delete-sm" (click)="confirmDelete(product.id)">Delete</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+</div>

@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Product } from '../models/product.model';
 
-/** Electronics & tech products – shown to logged-in users. */
-const ELECTRONICS_PRODUCTS: Product[] = [
+const SEED_PRODUCTS: Product[] = [
   {
     id: '1',
     name: 'Wireless Bluetooth Headphones',
@@ -115,16 +114,47 @@ const ELECTRONICS_PRODUCTS: Product[] = [
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
+  private readonly productsSignal = signal<Product[]>([...SEED_PRODUCTS]);
+
+  readonly products = this.productsSignal.asReadonly();
+
+  // ── Read ────────────────────────────────────────────────────────────────────
+
   getProducts(): Product[] {
-    return [...ELECTRONICS_PRODUCTS];
+    return this.productsSignal();
   }
 
   getProductById(id: string): Product | undefined {
-    return ELECTRONICS_PRODUCTS.find((p) => p.id === id);
+    return this.productsSignal().find((p) => p.id === id);
   }
 
   getCategories(): string[] {
-    const set = new Set(ELECTRONICS_PRODUCTS.map((p) => p.category));
+    const set = new Set(this.productsSignal().map((p) => p.category));
     return Array.from(set).sort();
+  }
+
+  // ── Admin: Add ──────────────────────────────────────────────────────────────
+
+  addProduct(product: Omit<Product, 'id'>): Product {
+    const newProduct: Product = {
+      ...product,
+      id: `prod-${Date.now()}`,
+    };
+    this.productsSignal.update((list) => [...list, newProduct]);
+    return newProduct;
+  }
+
+  // ── Admin: Edit ─────────────────────────────────────────────────────────────
+
+  updateProduct(id: string, changes: Partial<Omit<Product, 'id'>>): void {
+    this.productsSignal.update((list) =>
+      list.map((p) => (p.id === id ? { ...p, ...changes } : p))
+    );
+  }
+
+  // ── Admin: Delete ───────────────────────────────────────────────────────────
+
+  deleteProduct(id: string): void {
+    this.productsSignal.update((list) => list.filter((p) => p.id !== id));
   }
 }

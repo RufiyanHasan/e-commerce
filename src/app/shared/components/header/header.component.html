@@ -13,6 +13,7 @@
       <span class="user-name">Hi, {{ auth.currentUser()?.name }}</span>
       @if (auth.isAdmin()) {
         <span class="badge">Admin</span>
+        <a routerLink="/admin" routerLinkActive="active" class="nav-admin-dash">Dashboard</a>
       }
       <button type="button" class="btn-logout" (click)="auth.logout()">Logout</button>
     } @else {
