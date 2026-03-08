@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { OAuth2Client } from 'google-auth-library';
 import { prisma } from '../lib/prisma';
 
 const registerSchema = z.object({
@@ -76,4 +77,62 @@ export async function me(req: Request, res: Response): Promise<void> {
   });
   if (!user) { res.status(404).json({ message: 'User not found.' }); return; }
   res.json(user);
+}
+
+// POST /api/auth/google
+// Receives a Google ID token (credential) from the frontend,
+// verifies it, then creates or finds the user and returns a JWT.
+export async function googleSignIn(req: Request, res: Response): Promise<void> {
+  const { credential } = req.body as { credential?: string };
+  if (!credential) {
+    res.status(400).json({ message: 'Google credential is required.' });
+    return;
+  }
+
+  const clientId = process.env['GOOGLE_CLIENT_ID'];
+  if (!clientId) {
+    res.status(500).json({ message: 'Google OAuth is not configured on this server.' });
+    return;
+  }
+
+  try {
+    const client = new OAuth2Client(clientId);
+    const ticket = await client.verifyIdToken({ idToken: credential, audience: clientId });
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.email) {
+      res.status(401).json({ message: 'Invalid Google token.' });
+      return;
+    }
+
+    const { email, name, sub: googleId } = payload;
+
+    // Find existing user or create a new one (no password — Google-only accounts get a random hash)
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: name ?? email.split('@')[0],
+          password: await bcrypt.hash(googleId, 10), // never used for Google users
+          googleId,
+        },
+      });
+    } else if (!user.googleId) {
+      // Link Google ID to existing email account
+      user = await prisma.user.update({
+        where: { email },
+        data: { googleId },
+      });
+    }
+
+    res.json({
+      token: signToken(user.id, user.role),
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error('Google sign-in error:', err);
+    res.status(401).json({ message: 'Failed to verify Google token.' });
+  }
 }

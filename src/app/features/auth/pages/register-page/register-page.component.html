@@ -7,6 +7,11 @@
       <div class="error-msg" role="alert">{{ error }}</div>
     }
 
+    <!-- Google Sign-Up button (rendered by GSI SDK) -->
+    <div id="google-signup-btn" class="google-btn-wrapper"></div>
+
+    <div class="divider"><span>or sign up with email</span></div>
+
     <form (ngSubmit)="onSubmit()" class="auth-form">
       <label>
         <span>Name</span>
@@ -20,7 +25,9 @@
         <span>Password</span>
         <input type="password" [(ngModel)]="password" name="password" required placeholder="At least 6 characters" minlength="6" />
       </label>
-      <button type="submit" class="btn-primary" [disabled]="loading">{{ loading ? 'Creating…' : 'Create account' }}</button>
+      <button type="submit" class="btn-primary" [disabled]="loading">
+        {{ loading ? 'Creating…' : 'Create account' }}
+      </button>
     </form>
 
     <p class="footer-link">

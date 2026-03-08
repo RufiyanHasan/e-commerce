@@ -80,6 +80,20 @@ export class AuthService {
     }
   }
 
+  // ── Google SSO ────────────────────────────────────────────────────────────
+
+  async loginWithGoogle(credential: string): Promise<string | null> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<AuthResponse>(`${this.api}/google`, { credential })
+      );
+      this.setSession(res);
+      return null;
+    } catch (err: unknown) {
+      return this.extractError(err, 'Google sign-in failed. Please try again.');
+    }
+  }
+
   // ── Logout ────────────────────────────────────────────────────────────────
 
   logout(): void {
