@@ -3,7 +3,7 @@
   "framework": null,
   "installCommand": "npm install",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/e-commerce-app/browser",
+  "outputDirectory": "dist/e-commerce-app",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
