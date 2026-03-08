@@ -1,7 +1,9 @@
 {
+  "version": 2,
+  "framework": null,
   "buildCommand": "npm install && npx ng build --configuration production",
   "outputDirectory": "dist/e-commerce-app/browser",
-  "framework": null,
+  "installCommand": "echo skip",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
