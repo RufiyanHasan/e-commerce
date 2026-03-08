@@ -2,7 +2,7 @@
   "version": 2,
   "installCommand": "npm install",
   "buildCommand": "npm run build",
-  "outputDirectory": "public/browser",
+  "outputDirectory": "dist/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],

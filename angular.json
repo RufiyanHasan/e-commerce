@@ -42,7 +42,12 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "public",
+            "outputPath": {
+              "base": "dist/browser",
+              "browser": "",
+              "server": "server",
+              "media": "media"
+            },
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
