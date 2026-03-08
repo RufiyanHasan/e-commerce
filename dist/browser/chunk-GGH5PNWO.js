@@ -1,1 +1,0 @@
-var e={production:!1,apiUrl:"http://localhost:3000/api",googleClientId:"60315981275-ioc2k141trh0ati4dtphrktcuhbcleoo.apps.googleusercontent.com",paypalClientId:"AR5BwJ4Rjsx9mF4H2PbunNYtepkanVy6le9cDMmjBfjW1pyNVBcOquEDGhhpOmGhQJyNDnRtkB2kHFVJ",emailjs:{serviceId:"service_0qkkzgp",templateId:"template_2uutlxh",publicKey:"Xe8yTqECZdW20bzrc"}};export{e as a};

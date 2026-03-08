@@ -1,1 +1,0 @@
-import{j as r}from"./chunk-EG6DN5WV.js";var t="ecommerce_token",n=class e{get(){return localStorage.getItem(t)}set(o){localStorage.setItem(t,o)}remove(){localStorage.removeItem(t)}isPresent(){return!!this.get()}static \u0275fac=function(a){return new(a||e)};static \u0275prov=r({token:e,factory:e.\u0275fac,providedIn:"root"})};export{n as a};
