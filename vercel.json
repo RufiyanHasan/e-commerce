@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "buildCommand": "echo 'No build needed'",
   "outputDirectory": "dist/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
