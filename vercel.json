@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "echo 'No build needed'",
-  "outputDirectory": "dist/browser",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "public/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "env": {
+    "NPM_CONFIG_PRODUCTION": "false"
+  }
 }
