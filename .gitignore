@@ -45,4 +45,4 @@ Thumbs.db
 
 # Environment files — only ignore the local dev file
 # environment.prod.ts is safe to commit (no secrets, values are public)
-src/environments/environment.ts
+# environment.ts is also safe now — real secrets are in Vercel/Railway env vars
