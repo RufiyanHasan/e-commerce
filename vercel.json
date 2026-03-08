@@ -1,6 +1,7 @@
 {
   "buildCommand": "npm install && npx ng build --configuration production",
   "outputDirectory": "dist/e-commerce-app/browser",
+  "framework": null,
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
