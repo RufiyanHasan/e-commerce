@@ -43,6 +43,6 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-# Environment files with real API keys — never commit these
+# Environment files — only ignore the local dev file
+# environment.prod.ts is safe to commit (no secrets, values are public)
 src/environments/environment.ts
-src/environments/environment.prod.ts
