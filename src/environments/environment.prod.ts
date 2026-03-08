@@ -1,8 +1,7 @@
 export const environment = {
   production: true,
 
-  // ← Replace with your Railway backend URL after deploying
-  apiUrl: 'https://YOUR_APP.up.railway.app/api',
+  apiUrl: 'https://e-commerce-production-b6e7.up.railway.app/api',
 
   // These are public-facing client IDs — safe to commit
   googleClientId: '60315981275-ioc2k141trh0ati4dtphrktcuhbcleoo.apps.googleusercontent.com',
