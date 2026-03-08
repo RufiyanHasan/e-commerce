@@ -1,10 +1,13 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": "npm install && npx ng build --configuration production",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/e-commerce-app/browser",
-  "installCommand": "echo skip",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "env": {
+    "NPM_CONFIG_PRODUCTION": "false"
+  }
 }
