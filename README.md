@@ -1,59 +1,116 @@
-# ECommerceApp
+# E-Commerce App
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
+A full-stack e-commerce application built with **Angular 21** (frontend) and **Node.js + Express + Prisma** (backend).
 
-## Development server
+## Tech Stack
 
-To start a local development server, run:
+### Frontend
+- Angular 21 (standalone components, lazy-loaded routes)
+- SCSS
+- TypeScript
+- Deployed on **Vercel**
 
-```bash
-ng serve
+### Backend
+- Node.js + Express
+- Prisma ORM with PostgreSQL
+- JWT authentication + Google OAuth
+- Zod validation
+- Deployed on **Railway**
+
+## Features
+
+- User authentication (email/password + Google sign-in)
+- Product catalog with categories, ratings, and search
+- Shopping cart (persistent, server-side)
+- Checkout and order placement
+- Order tracking with status updates (Pending → Confirmed → Shipped → Delivered)
+- Admin panel
+- Contact form via EmailJS
+
+## Project Structure
+
+```
+├── src/                        # Angular frontend
+│   └── app/
+│       ├── core/               # Services, guards, interceptors
+│       ├── shared/             # Reusable components (header, footer)
+│       ├── layout/             # Main layout shell
+│       └── features/           # Lazy-loaded feature modules
+│           ├── home/
+│           ├── products/
+│           ├── cart/
+│           ├── checkout/
+│           ├── auth/
+│           └── admin/
+├── backend/                    # Express API
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/             # auth, products, cart, orders
+│   │   ├── middleware/
+│   │   └── server.ts
+│   └── prisma/
+│       ├── schema.prisma
+│       └── seed.ts
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Database Models
 
-## Code scaffolding
+- **User** – email, name, password, role (Customer/Admin), optional Google ID
+- **Product** – name, description, price, category, image, rating, stock status
+- **Order** – user reference, total, payment method, status
+- **OrderItem** – order reference, product reference, quantity, unit price
+- **CartItem** – user reference, product reference, quantity
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Getting Started
 
-```bash
-ng generate component component-name
-```
+### Prerequisites
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Node.js (v18+)
+- PostgreSQL database
+- npm
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### Frontend
 
 ```bash
-ng build
+npm install
+npm start
+# Runs at http://localhost:4200
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### Backend
 
 ```bash
-ng test
+cd backend
+npm install
 ```
 
-## Running end-to-end tests
+Create a `.env` file in `backend/` with:
 
-For end-to-end (e2e) testing, run:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
+JWT_SECRET=your-secret-key
+```
+
+Then run:
 
 ```bash
-ng e2e
+npm run db:generate    # Generate Prisma client
+npm run db:migrate     # Run database migrations
+npm run db:seed        # Seed sample data (optional)
+npm run dev            # Start dev server
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Useful Commands
 
-## Additional Resources
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start Angular dev server |
+| `npm run build` | Production build |
+| `npm test` | Run unit tests |
+| `cd backend && npm run dev` | Start backend dev server |
+| `cd backend && npm run db:studio` | Open Prisma Studio |
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Deployment
+
+- **Frontend** → Vercel (pre-built `dist/browser` served directly)
+- **Backend** → Railway (Nixpacks build with Prisma generate)
