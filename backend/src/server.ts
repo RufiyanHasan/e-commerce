@@ -15,7 +15,11 @@ const PORT = process.env['PORT'] ?? 3000;
 const isProd = process.env['NODE_ENV'] === 'production';
 
 // ── Security headers ──────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  })
+);
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env['CLIENT_ORIGIN'] ?? 'http://localhost:4200')
