@@ -131,8 +131,11 @@ export async function googleSignIn(req: Request, res: Response): Promise<void> {
       token: signToken(user.id, user.role),
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
-  } catch (err) {
-    console.error('Google sign-in error:', err);
-    res.status(401).json({ message: 'Failed to verify Google token.' });
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error('Google sign-in error:', errMsg);
+    console.error('GOOGLE_CLIENT_ID used:', clientId);
+    console.error('Credential (first 20 chars):', credential.substring(0, 20));
+    res.status(401).json({ message: 'Failed to verify Google token.', detail: errMsg });
   }
 }
